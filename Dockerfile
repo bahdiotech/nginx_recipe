@@ -1,4 +1,4 @@
-FROM python:3.12-alpine3.19
+FROM python:3.9-alpine3.13
 LABEL maintainer="bardiotech-portfolio.netlify.app"
 
 ENV PYTHONUNBUFFERED 1
@@ -11,11 +11,12 @@ WORKDIR /app
 EXPOSE 8000
 
 ARG DEV=false
+RUN apk add --update --no-cache libpcre32 libpcre16 pcre-dev
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
-    apk add --update --no-cache postgresql-client jpeg-dev && \
+    apk add --update --no-cache postgresql-client pcre-dev jpeg-dev && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev libpcre3-dev pcre-dev musl-dev zlib-dev linux-headers && \
+        build-base postgresql-dev pcre libpcre16 pcre-tools libpcre32 pcre-dev musl-dev zlib zlib-dev linux-headers && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
@@ -28,7 +29,7 @@ RUN python -m venv /py && \
         django-user && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
-    chown -R django-user:django-user /vol && \
+    chown -R django-user:django-user /vol &&\
     chmod -R 755 /vol && \
     chmod -R +x /scripts
 ENV PATH="/scripts:/py/bin:$PATH"
